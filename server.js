@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const notes = require("./db/db.json");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,7 +21,7 @@ app.get("/notes", function (req, res) {
 });
 
 app.get("/api/notes", function (req, res) {
-  res.readFile(db.json);
+  return res.json(notes);
 });
 
 app.listen(PORT, () => console.log(`App listening on PORT: ${PORT}`));
