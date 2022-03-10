@@ -10,6 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static("public"));
 
+//readme suggests need * but doesn't jump to next page when this happens
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "/public/index.html"));
 });
@@ -18,9 +19,9 @@ app.get("/notes", function (req, res) {
   res.sendFile(path.join(__dirname, "/public/notes.html"));
 });
 
-// app.get("/api/notes", function (req, res) {
-//   res.readFile(db.json);
-// });
+app.get("/api/notes", function (req, res) {
+  res.readFile(db.json);
+});
 
 app.listen(PORT, () => console.log(`App listening on PORT: ${PORT}`));
 
