@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const notes = require("./db/db.json");
+const uuid = require("./helpers/uuid");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,6 +23,36 @@ app.get("/notes", function (req, res) {
 
 app.get("/api/notes", function (req, res) {
   return res.json(notes);
+});
+
+app.post("/api/notes/", function (req, res) {
+  const { title, text } = req.body;
+  const newNote = {
+    title,
+    text,
+    noteId: uuid(),
+  };
+  fs.readFile("./db/db.json", "utf8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const parsedNotes = JSON.parse(data);
+      parsedNotes.push(newNote);
+      fs.writeFile(
+        "./db/db.json",
+        JSON.stringify(parsedNotes, null, 4),
+        (writeErr) =>
+          writeErr
+            ? console.error(writeErr)
+            : console.info("Successfully updated notes")
+      );
+    }
+  });
+  const response = {
+    status: "success",
+    body: newNote,
+  };
+  return res.json(response);
 });
 
 app.listen(PORT, () => console.log(`App listening on PORT: ${PORT}`));
