@@ -1,11 +1,1 @@
-[
-    {
-        "title": "Test Title",
-        "text": "Test text"
-    },
-    {
-        "title": "new note",
-        "text": "hi there",
-        "noteId": "ea43"
-    }
-]
+[{"title":"Test Title","text":"Test text"},{"title":"new note","text":"hi there","noteId":"ea43"},{"title":"does this work","text":"???","noteId":"d284"},{"title":"testing","text":"boo","noteId":"7894"},{"title":"testing testing","text":"boohoo","noteId":"4eed"},{"title":"123","text":"hi","noteId":"16fb"}]

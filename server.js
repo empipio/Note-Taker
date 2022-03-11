@@ -17,20 +17,28 @@ app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
+//jumps to notes page
 app.get("/notes", function (req, res) {
   res.sendFile(path.join(__dirname, "/public/notes.html"));
 });
 
+//get all notes
 app.get("/api/notes", function (req, res) {
-  return res.json(notes);
+  res.json(notes);
 });
 
+//get specific note
+app.get("/api/notes/:id", function (req, res) {
+  res.json(notes[req.params.id]);
+});
+
+//this works on insomnia but not when deployed
 app.post("/api/notes/", function (req, res) {
   const { title, text } = req.body;
   const newNote = {
     title,
     text,
-    noteId: uuid(),
+    id: uuid(),
   };
   fs.readFile("./db/db.json", "utf8", (err, data) => {
     if (err) {
@@ -38,9 +46,9 @@ app.post("/api/notes/", function (req, res) {
     } else {
       const parsedNotes = JSON.parse(data);
       parsedNotes.push(newNote);
-      fs.writeFile(
+      fs.writeFileSync(
         "./db/db.json",
-        JSON.stringify(parsedNotes, null, 4),
+        JSON.stringify(parsedNotes),
         (writeErr) =>
           writeErr
             ? console.error(writeErr)
@@ -52,7 +60,20 @@ app.post("/api/notes/", function (req, res) {
     status: "success",
     body: newNote,
   };
-  return res.json(response);
+  res.json(response);
+});
+
+app.delete("/api/notes/:id", function (req, res) {
+  for (let i = 0; i < notes.length; i++) {
+    if (notes[i].id == req.params.id) {
+      notes.splice(req.params.id, 1);
+      fs.writeFileSync("./db/db.json", JSON.stringify(notes), (writeErr) =>
+        writeErr
+          ? console.error(writeErr)
+          : console.info("Successfully deleted note")
+      );
+    }
+  }
 });
 
 app.listen(PORT, () => console.log(`App listening on PORT: ${PORT}`));
