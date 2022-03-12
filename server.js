@@ -29,8 +29,6 @@ app.get("/api/notes", function (req, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log(data);
-
       const parsedNotes = JSON.parse(data);
       res.json(parsedNotes);
     }
@@ -56,21 +54,9 @@ app.post("/api/notes/", function (req, res) {
     if (err) {
       console.log(err);
     } else {
-      console.log(data);
       const parsedNotes = JSON.parse(data);
       parsedNotes.push(newNote);
-      console.log(parsedNotes);
-      fs.writeFileSync(
-        "./db/db.json",
-        JSON.stringify(parsedNotes)
-        // (writeErr) => {
-        //   console.log(writeErr);
-        //   return writeErr
-        //     ? console.error(writeErr)
-        //     : console.info("Successfully updated notes");
-        // }
-      );
-      console.log("fdhwesarefd");
+      fs.writeFileSync("./db/db.json", JSON.stringify(parsedNotes));
       const response = {
         status: "success",
         body: newNote,
@@ -81,16 +67,35 @@ app.post("/api/notes/", function (req, res) {
 });
 
 app.delete("/api/notes/:id", function (req, res) {
-  for (let i = 0; i < notes.length; i++) {
-    if (notes[i].id == req.body.id) {
-      notes.splice(req.body.id, 1);
-      fs.writeFileSync("./db/db.json", JSON.stringify(notes), (writeErr) =>
-        writeErr
-          ? console.error(writeErr)
-          : console.info("Successfully deleted note")
-      );
+  fs.readFile("./db/db.json", "utf8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const parsedNotes = JSON.parse(data);
+      const paramID = req.params.id;
+      const noteIndex = parsedNotes.findIndex((note) => note.id == paramID);
+      parsedNotes.splice(noteIndex, 1);
+      console.log(parsedNotes);
+      fs.writeFileSync("./db/db.json", JSON.stringify(parsedNotes));
+      res.json(parsedNotes);
+
+      //get id from query parameter
+      //read file and look for matching id
+      //array.findindex to get element in array to remove
+      //remove element from array - array.splice
+      //rewrite file with new array
+
+      // for (let i = 0; i < notes.length; i++) {
+      //   if (notes[i].id == req.body.id) {
+      //     notes.splice(req.body.id, 1);
+      //     fs.writeFileSync("./db/db.json", JSON.stringify(notes), (writeErr) =>
+      //       writeErr
+      //         ? console.error(writeErr)
+      //         : console.info("Successfully deleted note")
+      //     );
+      //   }
     }
-  }
+  });
 });
 
 app.listen(PORT, () => console.log(`App listening on PORT: ${PORT}`));
