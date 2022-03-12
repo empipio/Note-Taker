@@ -24,17 +24,29 @@ app.get("/notes", function (req, res) {
 
 //get all notes
 app.get("/api/notes", function (req, res) {
-  res.json(notes);
+  //want to read most up to date version of file
+  fs.readFile("./db/db.json", "utf8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(data);
+
+      const parsedNotes = JSON.parse(data);
+      res.json(parsedNotes);
+    }
+  });
+  //then return it
 });
 
 //get specific note
 app.get("/api/notes/:id", function (req, res) {
-  res.json(notes[req.params.id]);
+  const { title, text, id } = req.body;
+  res.json(notes[req.body.id]);
 });
 
 //this works on insomnia but not when deployed
 app.post("/api/notes/", function (req, res) {
-  const { title, text } = req.body;
+  const { title, text, id } = req.body;
   const newNote = {
     title,
     text,
@@ -44,29 +56,34 @@ app.post("/api/notes/", function (req, res) {
     if (err) {
       console.log(err);
     } else {
+      console.log(data);
       const parsedNotes = JSON.parse(data);
       parsedNotes.push(newNote);
+      console.log(parsedNotes);
       fs.writeFileSync(
         "./db/db.json",
-        JSON.stringify(parsedNotes),
-        (writeErr) =>
-          writeErr
-            ? console.error(writeErr)
-            : console.info("Successfully updated notes")
+        JSON.stringify(parsedNotes)
+        // (writeErr) => {
+        //   console.log(writeErr);
+        //   return writeErr
+        //     ? console.error(writeErr)
+        //     : console.info("Successfully updated notes");
+        // }
       );
+      console.log("fdhwesarefd");
+      const response = {
+        status: "success",
+        body: newNote,
+      };
+      res.json(response);
     }
   });
-  const response = {
-    status: "success",
-    body: newNote,
-  };
-  res.json(response);
 });
 
 app.delete("/api/notes/:id", function (req, res) {
   for (let i = 0; i < notes.length; i++) {
-    if (notes[i].id == req.params.id) {
-      notes.splice(req.params.id, 1);
+    if (notes[i].id == req.body.id) {
+      notes.splice(req.body.id, 1);
       fs.writeFileSync("./db/db.json", JSON.stringify(notes), (writeErr) =>
         writeErr
           ? console.error(writeErr)
