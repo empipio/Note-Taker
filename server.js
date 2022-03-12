@@ -7,24 +7,24 @@ const uuid = require("./helpers/uuid");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Middleware for parsing JSON and urlencoded form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static("public"));
 
-//readme suggests need * but doesn't jump to next page when this happens
+//GET route for landing page
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
-//jumps to notes page
+//GET route for notes page
 app.get("/notes", function (req, res) {
   res.sendFile(path.join(__dirname, "/public/notes.html"));
 });
 
-//get all notes
+//GET all notes
 app.get("/api/notes", function (req, res) {
-  //want to read most up to date version of file
   fs.readFile("./db/db.json", "utf8", (err, data) => {
     if (err) {
       console.log(err);
@@ -33,23 +33,24 @@ app.get("/api/notes", function (req, res) {
       res.json(parsedNotes);
     }
   });
-  //then return it
 });
 
-//get specific note
+//GET specific note
 app.get("/api/notes/:id", function (req, res) {
   const { title, text, id } = req.body;
   res.json(notes[req.body.id]);
 });
 
-//this works on insomnia but not when deployed
+//POST route to add a new note
 app.post("/api/notes/", function (req, res) {
   const { title, text, id } = req.body;
   const newNote = {
     title,
     text,
+    //each note is given a unique id using uuid function
     id: uuid(),
   };
+  //new note pushed into parsedNotes array and file then rewritten
   fs.readFile("./db/db.json", "utf8", (err, data) => {
     if (err) {
       console.log(err);
@@ -66,6 +67,7 @@ app.post("/api/notes/", function (req, res) {
   });
 });
 
+//delete selected note using id as query parameter
 app.delete("/api/notes/:id", function (req, res) {
   fs.readFile("./db/db.json", "utf8", (err, data) => {
     if (err) {
@@ -73,50 +75,15 @@ app.delete("/api/notes/:id", function (req, res) {
     } else {
       const parsedNotes = JSON.parse(data);
       const paramID = req.params.id;
+      //findIndex finds the index of element in the parsedNotes array which has an id matching that in the query parameter
       const noteIndex = parsedNotes.findIndex((note) => note.id == paramID);
+      //note removed from array by splicing, which mutates original array
       parsedNotes.splice(noteIndex, 1);
-      console.log(parsedNotes);
+      //db.json then rewritten once note deleted
       fs.writeFileSync("./db/db.json", JSON.stringify(parsedNotes));
       res.json(parsedNotes);
-
-      //get id from query parameter
-      //read file and look for matching id
-      //array.findindex to get element in array to remove
-      //remove element from array - array.splice
-      //rewrite file with new array
-
-      // for (let i = 0; i < notes.length; i++) {
-      //   if (notes[i].id == req.body.id) {
-      //     notes.splice(req.body.id, 1);
-      //     fs.writeFileSync("./db/db.json", JSON.stringify(notes), (writeErr) =>
-      //       writeErr
-      //         ? console.error(writeErr)
-      //         : console.info("Successfully deleted note")
-      //     );
-      //   }
     }
   });
 });
 
 app.listen(PORT, () => console.log(`App listening on PORT: ${PORT}`));
-
-//click save->post request?
-//get request to get existing notes? -> data persistence activity
-//also get request to move note from column to main page but code for this should already be written so just request to do
-//work out delete request
-//fs is involved somewhere, I think in data persistence/saving the notes to db.json
-//generate id for each note? uuid function seen in activities?
-
-//only got api/notes so don't think need routes folder/modularization?
-
-// The following API routes should be created:
-
-// GET /api/notes should read the db.json file and return all saved notes as JSON.
-
-// POST /api/notes should receive a new note to save on the request body, add it to the db.json file, and then return the new
-// note to the client. You'll need to find a way to give each note a unique id when it's saved (look into npm packages that
-//could do this for you).
-
-//DELETE /api/notes/:id should receive a query parameter that contains the id of a note to delete. To delete a note, you'll
-//need to read all notes from the db.json file, remove the note with the given id property, and then rewrite the notes to
-// the db.json file.
